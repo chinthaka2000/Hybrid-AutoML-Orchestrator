@@ -1,0 +1,4 @@
+budget:
+  monthly_limit_usd: 500
+  per_experiment_limit_usd: 50
+  max_concurrent_experiments: 2

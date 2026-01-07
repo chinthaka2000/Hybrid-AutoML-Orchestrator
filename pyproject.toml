@@ -1,0 +1,18 @@
+[project]
+name = "hybrid-automl-orchestrator"
+version = "0.1.0"
+description = "Hybrid AutoML Orchestrator using H2O and LLM-based reasoning"
+requires-python = ">=3.9"
+dependencies = [
+    "h2o",
+    "pandas",
+    "numpy",
+    "pyyaml",
+    "scikit-learn",
+    "requests",
+    "python-dotenv"
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"

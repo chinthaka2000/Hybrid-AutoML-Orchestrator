@@ -1,0 +1,13 @@
+deployment:
+  strategies:
+    - "shadow"
+    - "canary"
+    - "blue_green"
+  default_strategy: "shadow"
+  promotion_criteria:
+    min_accuracy: 0.85
+    max_latency_ms: 100
+  rollback:
+    auto_rollback: true
+    latency_threshold_ms: 200
+    error_rate_threshold: 0.01

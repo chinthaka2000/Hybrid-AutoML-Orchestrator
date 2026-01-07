@@ -1,0 +1,11 @@
+policies:
+  retraining:
+    trigger: "drift_detected"
+    threshold: 0.05
+    min_interval_hours: 24
+  rollback:
+    trigger: "performance_degradation"
+    threshold: 0.10
+  budget:
+    max_training_time_hours: 4
+    max_cost_usd: 50
