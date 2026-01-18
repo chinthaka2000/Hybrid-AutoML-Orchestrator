@@ -36,12 +36,15 @@ class AutoMLRunner:
         os.makedirs(models_dir, exist_ok=True)
         saved_path = h2o.save_model(model=best_model, path=models_dir, force=True)
         
-        # Register
         metrics = {
             "algo": best_model.algo,
             "rmse": best_model.rmse(),
-            "auc": best_model.auc() if best_model.algo != "StackedEnsemble" else None # StackedEnsemble might not have AUC in some cases
         }
+        try:
+            metrics["auc"] = best_model.auc()
+        except:
+             metrics["auc"] = None 
+             
         model_id = self.registry.register_model(saved_path, metrics)
         print(f"Model registered with ID: {model_id}")
         

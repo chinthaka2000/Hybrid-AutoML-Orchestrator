@@ -10,7 +10,10 @@ dependencies = [
     "pyyaml",
     "scikit-learn",
     "requests",
-    "python-dotenv"
+    "python-dotenv",
+    "google-genai",
+    "fastapi",
+    "uvicorn"
 ]
 
 [build-system]

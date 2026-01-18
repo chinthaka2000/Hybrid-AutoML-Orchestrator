@@ -32,3 +32,6 @@ venv/
 data/
 experiments/
 models/
+cred.json
+*.json
+!src/**/*.json

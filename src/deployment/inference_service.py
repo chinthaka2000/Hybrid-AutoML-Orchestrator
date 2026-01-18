@@ -1,34 +1,49 @@
-"""
-Exposes models for inference (API or batch).
-"""
-
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 import h2o
 import pandas as pd
+import os
+from contextlib import asynccontextmanager
 
-class InferenceService:
-    def __init__(self):
-        # Ensure H2O is connected
-        try:
-            h2o.init(url="http://localhost:54321")
-        except:
-            pass
+# Global model
+model = None
 
-    def predict(self, model_path: str, input_data):
-        """
-        Loads a model and generates predictions.
-        input_data: pandas DataFrame or list of lists
-        """
-        try:
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load model on startup
+    global model
+    try:
+        h2o.init(url=os.getenv("H2O_URL", "http://localhost:54321"))
+        model_path = os.getenv("MODEL_PATH") # e.g., models/production/model_id
+        if model_path:
             model = h2o.load_model(model_path)
-            
-            # Convert to H2OFrame
-            if isinstance(input_data, pd.DataFrame):
-                hf = h2o.H2OFrame(input_data)
-            else:
-                hf = h2o.H2OFrame(python_obj=input_data)
-                
-            preds = model.predict(hf)
-            return preds.as_data_frame()
-        except Exception as e:
-            print(f"Inference failed: {e}")
-            raise e
+            print(f"Loaded model from {model_path}")
+        else:
+            print("Warning: MODEL_PATH env var not set.")
+    except Exception as e:
+        print(f"Startup failed: {e}")
+    yield
+    # Shutdown logic if needed
+
+app = FastAPI(lifespan=lifespan)
+
+class PredictionRequest(BaseModel):
+    data: list
+
+@app.post("/predict")
+async def predict(request: PredictionRequest):
+    global model
+    if not model:
+        raise HTTPException(status_code=503, detail="Model not loaded")
+    
+    try:
+        # data is expected to be list of lists or dict
+        hf = h2o.H2OFrame(python_obj=request.data)
+        preds = model.predict(hf).as_data_frame()
+        return {"predictions": preds.to_dict(orient="records")}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
