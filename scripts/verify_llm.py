@@ -15,9 +15,16 @@ def test_api():
     if not api_key:
         print("Error: Please set LLM_API_KEY in your .env file.")
         return
+        
+    # Security check: print only prefix
+    prefix = api_key[:4] if len(api_key) > 4 else "???"
+    print(f"Key Prefix: {prefix}...")
+    if not prefix.startswith("AIza"):
+        print("WARNING: Standard Google API Keys usually start with 'AIza'. Yours might be different or incorrect.")
 
     print("Initializing Decision Engine...")
     engine = DecisionEngine()
+    print(f"Target Model: {engine.model_name}")
     
     context = {
         'drift_status': 'None',

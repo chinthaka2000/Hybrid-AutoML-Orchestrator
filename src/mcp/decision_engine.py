@@ -3,21 +3,21 @@ import json
 import os
 
 class DecisionEngine:
-    def __init__(self, api_key: str = None, model_name: str = "gemini-2.0-flash"):
+    def __init__(self, api_key: str = None, model_name: str = None):
         api_key = api_key or os.getenv("LLM_API_KEY")
+        self.model_name = model_name or os.getenv("LLM_MODEL", "gemini-1.5-flash")
         
-        try:
-            if api_key:
-                self.client = genai.Client(api_key=api_key)
-            else:
-                print("Info: LLM_API_KEY not set. Attempting to use Application Default Credentials (OAuth)...")
-                # The SDK automatically looks for GOOGLE_APPLICATION_CREDENTIALS or gcloud auth
-                self.client = genai.Client()
-        except Exception as e:
-            print(f"Warning: Failed to initialize LLM Client: {e}")
+        if not api_key:
+            print("Warning: LLM_API_KEY not found. Decision Engine will be disabled.")
             self.client = None
-            
-        self.model_name = model_name
+        else:
+            # Force 'gemini' mode (Generative Language API) by setting api_key
+            # If using Vertex AI, one would use vertexai=True or project=...
+            try:
+                self.client = genai.Client(api_key=api_key)
+            except Exception as e:
+                print(f"Warning: Client init failed: {e}")
+                self.client = None
 
     def get_recommendation(self, context: dict) -> dict:
         """
